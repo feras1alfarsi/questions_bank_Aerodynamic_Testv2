@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Theme State Variable Declarations */
+    :root {
+      /* Shared System Constants */
+      --primary-cyan: #00f0ff;
+      --primary-blue: #3b82f6;
+      --glow-cyan: rgba(0, 240, 255, 0.25);
+      --success-green: #10b981;
+      --error-red: #ef4444;
+      --warning-amber: #f59e0b;
+      --transition-speed: 0.3s;
+
+      /* DEFAULT: Cockpit Night Ops (Dark Mode) */
+      --bg-dark: #0b0f19;
+      --panel-bg: #131a2c;
+      --panel-border: #24314f;
+      --text-primary: #f1f5f9;
+      --text-muted: #94a3b8;
+      --input-bg: rgba(11, 15, 25, 0.6);
+      --btn-secondary: rgba(255, 255, 255, 0.05);
+      --radial-gradient-1: rgba(59, 130, 246, 0.1);
+      --radial-gradient-2: rgba(0, 240, 255, 0.05);
+    }
+
+    /* Light Mode Overrides (Day VFR Navigation) */
+    [data-theme="light"] {
+      --bg-dark: #f0f4f8;
+      --panel-bg: #ffffff;
+      --panel-border: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-muted: #64748b;
+      --input-bg: #f8fafc;
+      --btn-secondary: #e2e8f0;
+      --radial-gradient-1: rgba(59, 130, 246, 0.05);
+      --radial-gradient-2: rgba(0, 240, 255, 0.02);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      font-family: 'Inter', sans-serif; 
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, var(--radial-gradient-1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, var(--radial-gradient-2) 0px, transparent 50%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+
+    #app-container { 
+      width: 100%; 
+      max-width: 850px; 
+      perspective: 1000px;
+      position: relative;
+    }
+
+    /* System Control Header (Utility Controls) */
+    .system-controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+
+    .control-btn {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      color: var(--text-primary);
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: all var(--transition-speed);
+    }
+    .control-btn:hover {
+      border-color: var(--primary-blue);
+    }
+    .control-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Glass Cockpit HUD Panel Mappings */
+    .card {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      transition: background-color var(--transition-speed), border-color var(--transition-speed), box-shadow 0.4s;
+    }
+
+    /* Header Presentation Elements */
+    .landing-header { text-align: center; margin-bottom: 36px; }
+    .brand-icon-wrapper {
+      width: 64px;
+      height: 64px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px auto;
+      color: var(--primary-blue);
+    }
+    .brand-icon-wrapper svg { width: 36px; height: 36px; fill: currentColor; }
+
+    .landing-header h1 { 
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+    
+    /* Input UI Forms */
+    .input-group { margin-bottom: 24px; text-align: left; }
+    .input-group label { 
+      display: block; 
+      font-weight: 600; 
+      margin-bottom: 8px; 
+      font-size: 13px; 
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .input-group .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-group .input-wrapper svg {
+      position: absolute;
+      left: 16px;
+      width: 18px;
+      height: 18px;
+      fill: var(--text-muted);
+    }
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      background: var(--input-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      font-size: 16px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .input-group input:focus { 
+      border-color: var(--primary-blue); 
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Electronic Flight Instrument Progress Display */
+    .progress-container { 
+      background: rgba(148, 163, 184, 0.1); 
+      height: 6px; 
+      border-radius: 10px; 
+      margin: 20px 0; 
+      overflow: hidden; 
+    }
+    #progress-bar { 
+      background: linear-gradient(90deg, var(--primary-blue), var(--primary-cyan)); 
+      width: 0%; 
+      height: 100%; 
+      transition: width 0.3s ease; 
+    }
+
+    /* Chart / Attachment Framework */
+    .q-image-wrapper { 
+      width: 100%; 
+      text-align: center; 
+      margin-bottom: 28px; 
+      border: 1px solid var(--panel-border); 
+      border-radius: 12px; 
+      overflow: hidden; 
+      background: #000;
+    }
+    .q-image-wrapper img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+
+    /* Answer Alternatives Layout */
+    .options-list { display: flex; flex-direction: column; gap: 14px; }
+    .option-item { 
+      border: 1px solid var(--panel-border); 
+      background: rgba(255, 255, 255, 0.01);
+      border-radius: 10px; 
+      padding: 18px 22px; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+    }
+    .option-item:hover {
+      background: rgba(59, 130, 246, 0.04);
+      border-color: var(--primary-blue);
+    }
+    .option-item.selected { 
+      border-color: var(--primary-blue); 
+      background: rgba(59, 130, 246, 0.08);
+    }
+    .option-item strong {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--primary-blue);
+      margin-right: 14px;
+      font-size: 17px;
+    }
+    
+    /* Aviation Structural Navigation Controls */
+    .btn { 
+      padding: 16px 32px; 
+      border-radius: 10px; 
+      border: none; 
+      font-weight: 600; 
+      cursor: pointer; 
+      width: 100%; 
+      font-size: 16px; 
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-primary { 
+      background: var(--primary-blue);
+      color: white; 
+    }
+    .btn-primary:hover { 
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled { 
+      background: var(--btn-secondary) !important; 
+      color: var(--text-muted) !important; 
+      cursor: not-allowed; 
+      transform: none !important;
+    }
+    
+    /* HUD Status Tracking Blocks */
+    .quiz-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .timer-badge { 
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700; 
+      font-size: 18px; 
+      padding: 6px 16px; 
+      border-radius: 30px; 
+      background: rgba(59, 130, 246, 0.1); 
+      color: var(--primary-blue); 
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    .timer-warning { 
+      background: rgba(239, 68, 68, 0.15) !important; 
+      color: var(--error-red) !important; 
+      border-color: var(--error-red) !important;
+      animation: pulse 1s infinite alternate; 
+    }
+    
+    /* Utilities */
+    .hidden { display: none; }
+    .loader { 
+      border: 3px solid rgba(59, 130, 246, 0.1); 
+      border-top: 3px solid var(--primary-blue); 
+      border-radius: 50%; 
+      width: 48px; 
+      height: 48px; 
+      animation: spin 0.8s linear infinite; 
+      margin: 24px auto; 
+    }
+
+    .badge {
+      font-size: 1.1rem;
+      font-weight: 700; 
+      padding: 12px 28px; 
+      border-radius: 8px; 
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+    .badge-pass { background: rgba(16, 185, 129, 0.12); color: var(--success-green); border: 1px solid var(--success-green); }
+    .badge-fail { background: rgba(239, 68, 68, 0.12); color: var(--error-red); border: 1px solid var(--error-red); }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes pulse { from { opacity: 1; } to { opacity: 0.6; } }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  
+  <div class="system-controls">
+    <button class="control-btn" id="theme-toggle" onclick="toggleDisplayTheme()">
+      <svg id="theme-icon-sun" class="hidden" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zm0-11c.41 0 .75-.34.75-.75V2.75c0-.41-.34-.75-.75-.75s-.75.34-.75.75v1.5c0 .41.34.75.75.75zm0 16c.41 0 .75-.34.75-.75v-1.5c0-.41-.34-.75-.75-.75s-.75.34-.75.75v1.5c0 .41.34.75.75.75zm8.24-14.24c.29-.29.29-.77 0-1.06s-.77-.29-1.06 0l-1.06 1.06c-.29.29-.29.77 0 1.06s.77.29 1.06 0l1.06-1.06zm-14.14 14.14c.29-.29.29-.77 0-1.06s-.77-.29-1.06 0l-1.06 1.06c-.29.29-.29.77 0 1.06s.77.29 1.06 0l1.06-1.06zM21.25 11.25h-1.5c-.41 0-.75.34-.75.75s.34.75.75.75h1.5c.41 0 .75-.34.75-.75s-.34-.75-.75-.75zM4.25 11.25h-1.5c-.41 0-.75.34-.75.75s.34.75.75.75h1.5c.41 0 .75-.34.75-.75s-.34-.75-.75-.75zm14.24 4.24c.29-.29.29-.77 0-1.06s-.77-.29-1.06 0l-1.06 1.06c-.29.29-.29.77 0 1.06s.77.29 1.06 0l1.06-1.06zm-14.14-14.14c.29-.29.29-.77 0-1.06s-.77-.29-1.06 0l-1.06 1.06c-.29.29-.29.77 0 1.06s.77.29 1.06 0l1.06-1.06z"/></svg>
+      <svg id="theme-icon-moon" viewBox="0 0 24 24"><path d="M12.3 22c5.3 0 9.7-4.2 10-9.5-.1 0-.2.1-.4.1-5.1 0-9.3-4.2-9.3-9.4 0-.4.1-.7.1-1-.5-.1-1-.1-1.4-.1C5.9 2 2 5.9 2 10.7 2 15.6 5.9 22 12.3 22zm.7-18.4c.1.5.1 1 .1 1.4 0 6.1 5 11 11.1 11h.4c-.8 3.2-3.7 5.6-7.2 5.6-4.1 0-7.5-3.4-7.5-7.6 0-3.9 3.1-7.1 7.1-7.4z"/></svg>
+      <span id="theme-text">Day VFR Mode</span>
+    </button>
+  </div>
+
+  <div id="landing-page" class="card">
+    <div class="landing-header">
+      <div class="brand-icon-wrapper">
+        <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l8 2.5z"/></svg>
+      </div>
+      <h1>Aviation Knowledge Test</h1>
+      <p style="color: var(--text-muted)">Flight Operations Control Center. Verify credentials to open student test parameters.</p>
+    </div>
+    
+    <div class="input-group">
+      <label>Full Name</label>
+      <div class="input-wrapper">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <input type="text" id="student-name" placeholder="Pilot-in-Command Name" required>
+      </div>
+    </div>
+    
+    <div class="input-group">
+      <label>Student ID / Certificate Number</label>
+      <div class="input-wrapper">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+        <input type="text" id="student-id" placeholder="Enter registration tracking ID" required>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="startExam()">
+      Authorize Manifest & Takeoff
+    </button>
+  </div>
+
+  <div id="loading" class="card hidden" style="text-align: center;">
+    <div class="loader"></div>
+    <p style="text-align:center; color: var(--text-muted)" id="loading-text">Downloading technical database telemetry...</p>
+  </div>
+
+  <div id="quiz-area" class="hidden">
+    <div class="header" style="margin-bottom: 24px; padding: 0 4px;">
+      <div class="quiz-meta-row">
+        <h2 id="display-student-name" style="margin:0; font-size: 15px; font-weight:600; color: var(--text-muted); display:flex; align-items:center; gap:8px;">
+          <svg style="width:16px; height:16px; fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <span>---</span>
+        </h2>
+        <div id="exam-timer" class="timer-badge">60:00</div>
+      </div>
+      <div class="progress-container">
+        <div id="progress-bar"></div>
+      </div>
+      <small id="q-counter" style="color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-weight:700; font-size:11px;">HUD CHNL // DATA MATRIX CONFIG</small>
+    </div>
+
+    <div class="card" style="margin-bottom: 24px;">
+      <div id="text" style="font-size: 1.25rem; font-weight: 500; line-height: 1.6; margin-bottom: 28px;"></div>
+      <div id="image-container" class="q-image-wrapper hidden">
+        <img id="q-image" src="" alt="Aviation Sectional Chart Chart/Diagram Attachment">
+      </div>
+      <div id="options" class="options-list"></div>
+    </div>
+
+    <div style="display: flex; gap: 16px;">
+      <button id="prev-btn" class="btn" style="background: var(--btn-secondary); color: var(--text-primary); border: 1px solid var(--panel-border);" onclick="prevQuestion()">
+        Back track
+      </button>
+      <button id="next-btn" class="btn btn-primary" onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+
+  <div id="result-area" class="card hidden" style="text-align:center; padding: 64px;">
+    <div id="result-vector" style="width: 80px; height: 80px; margin: 0 auto 24px auto;"></div>
+    <h2 id="result-header" style="font-size: 2rem; margin-bottom: 8px;">De-briefing Report Generated</h2>
+    <p style="color: var(--text-muted)">Final Grade Evaluation Output Matrix</p>
+    <p id="score-text" style="font-size: 4rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin: 12px 0;"></p>
+    <div id="status-badge" class="badge"></div>
+  </div>
+
+</div>
+
+<script>
+  const API_URL = "https://script.google.com/macros/s/AKfycbzh2BrHriK5ZpXeXR1iaOkYLznz-sjCIXR4fOnjxZLGj1QH_C8I7cxN9maDbhEA3gJQ/exec";
+
+  let questions = [];
+  let currentIndex = 0;
+  let userAnswers = {};
+  let startTime;
+  let timerInterval = null;
+  let timeRemaining = 60 * 60; 
+
+  // Modern UI Light/Dark Engine Handler 
+  function toggleDisplayTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', targetTheme);
+    
+    const sunIcon = document.getElementById('theme-icon-sun');
+    const moonIcon = document.getElementById('theme-icon-moon');
+    const themeText = document.getElementById('theme-text');
+    
+    if (targetTheme === 'light') {
+      sunIcon.classList.remove('hidden');
+      moonIcon.classList.add('hidden');
+      themeText.innerText = "Night Ops Mode";
+    } else {
+      sunIcon.classList.add('hidden');
+      moonIcon.classList.remove('hidden');
+      themeText.innerText = "Day VFR Mode";
+    }
+  }
+
+  function startExam() {
+    const name = document.getElementById('student-name').value.trim();
+    const id = document.getElementById('student-id').value.trim();
+
+    if (!name || !id) {
+      alert("Verification Error: Complete target registration logs.");
+      return;
+    }
+
+    document.getElementById('landing-page').classList.add('hidden');
+    document.getElementById('loading-text').innerText = "Establishing secure cross-link. Downloading exam parameters...";
+    document.getElementById('loading').classList.remove('hidden');
+
+    fetch(API_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "getQuestions" })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Data telemetry cross-link drop.");
+      return response.json();
+    })
+    .then(data => {
+      questions = data;
+      startTime = new Date();
+      document.getElementById('display-student-name').querySelector('span').innerText = `PIC: ${name.toUpperCase()} (CERT ID: ${id})`;
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('quiz-area').classList.remove('hidden');
+      
+      initTimerEngine();
+      showQuestion();
+    })
+    .catch(err => {
+      alert("System Authorization Failure: " + err.message);
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('landing-page').classList.remove('hidden');
+    });
+  }
+
+  function initTimerEngine() {
+    const timerDisplay = document.getElementById('exam-timer');
+    
+    timerInterval = setInterval(() => {
+      timeRemaining--;
+
+      let mins = Math.floor(timeRemaining / 60);
+      let secs = timeRemaining % 60;
+
+      let formattedMins = mins < 10 ? "0" + mins : mins;
+      let formattedSecs = secs < 10 ? "0" + secs : secs;
+      
+      timerDisplay.innerText = `${formattedMins}:${formattedSecs}`;
+
+      if (timeRemaining <= 300) {
+        timerDisplay.classList.add('timer-warning');
+      }
+
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        alert("Emergency Extrication: Allotted mission time structural threshold reached. Force-transmitting data.");
+        submitQuiz();
+      }
+    }, 1000);
+  }
+
+  function showQuestion() {
+    const q = questions[currentIndex];
+    
+    document.getElementById('progress-bar').style.width = ((currentIndex + 1) / questions.length * 100) + '%';
+    document.getElementById('q-counter').innerText = `HUD MATRIX CHNL // QUESTION MODULE ${currentIndex + 1} OF ${questions.length}`;
+    document.getElementById('text').innerText = q.text;
+
+    const imgContainer = document.getElementById('image-container');
+    const imgTag = document.getElementById('q-image');
+    if (q.imageUrl && q.imageUrl.length > 5) {
+      imgTag.src = q.imageUrl;
+      imgContainer.classList.remove('hidden');
+    } else {
+      imgContainer.classList.add('hidden');
+    }
+
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = '';
+    q.options.forEach(opt => {
+      const div = document.createElement('div');
+      div.className = `option-item ${userAnswers[q.id] === opt.id ? 'selected' : ''}`;
+      div.onclick = () => { 
+        userAnswers[q.id] = opt.id; 
+        showQuestion(); 
+      };
+      div.innerHTML = `<strong>${opt.id}</strong> ${opt.text}`;
+      optionsDiv.appendChild(div);
+    });
+
+    document.getElementById('prev-btn').style.visibility = currentIndex === 0 ? 'hidden' : 'visible';
+    
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.innerText = currentIndex === questions.length - 1 ? 'Commit Logs & Land' : 'Confirm & Forward';
+    
+    if (!userAnswers[q.id]) {
+      nextBtn.disabled = true;
+    } else {
+      nextBtn.disabled = false;
+    }
+  }
+
+  function nextQuestion() {
+    if (currentIndex < questions.length - 1) {
+      currentIndex++;
+      showQuestion();
+    } else {
+      submitQuiz();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentIndex > 0) {
+      currentIndex--;
+      showQuestion();
+    }
+  }
+
+  function submitQuiz() {
+    if (timerInterval) clearInterval(timerInterval);
+
+    const endTime = new Date();
+    const diff = Math.floor((endTime - startTime) / 1000);
+    const minutes = Math.floor(diff / 60);
+    const seconds = diff % 60;
+
+    const submission = {
+      studentInfo: { 
+        id: document.getElementById('student-id').value, 
+        name: document.getElementById('student-name').value 
+      },
+      answers: Object.keys(userAnswers).map(id => ({ questionId: id, selectedOption: userAnswers[id] })),
+      timeSpent: `${minutes}m ${seconds}s`
+    };
+
+    document.getElementById('quiz-area').classList.add('hidden');
+    document.getElementById('loading-text').innerText = "Analyzing flight safety performance. Writing system logs...";
+    document.getElementById('loading').classList.remove('hidden');
+
+    fetch(API_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "submitExam", data: submission })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Data ingestion stream interrupted.");
+      return response.json();
+    })
+    .then(res => {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('result-area').classList.remove('hidden');
+      //document.getElementById('score-text').innerText = `${res.percentage}%`;
+      document.getElementById('score-text').innerText = `${parseInt(res.percentage)}%`;
+      
+      const badge = document.getElementById('status-badge');
+      const vectorDiv = document.getElementById('result-vector');
+      
+      if(res.status === 'PASS') {
+        badge.innerText = 'FLIGHT CERTIFICATION CLEARANCE: GRANTED';
+        badge.className = 'badge badge-pass';
+        vectorDiv.innerHTML = '<svg style="width:100%; height:100%; fill:var(--success-green)" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+      } else {
+        badge.innerText = 'FLIGHT CERTIFICATION CLEARANCE: DISAPPROVED';
+        badge.className = 'badge badge-fail';
+        vectorDiv.innerHTML = '<svg style="width:100%; height:100%; fill:var(--error-red)" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
+      }
+    })
+    .catch(err => {
+      alert("Terminal Submission Failure: " + err.message);
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('quiz-area').classList.remove('hidden');
+      initTimerEngine();
+    });
+  }
+</script>
+
+</body>
+</html>
